@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: weekly_margin
+    description: >
+      Gross margin per week. Grain: one row per iso_week x city x category with at least one counted line.
+      margin_sar = costed_revenue_sar - cost_sar; uncosted lines count in lines and revenue_sar only.
+    data_tests:
+      - unique:
+          arguments:
+            column_name: "iso_week || '|' || city || '|' || category"
+    columns:
+      - name: iso_week
+        data_tests:
+          - not_null
+      - name: lines
+        data_tests:
+          - not_null

@@ -1,0 +1,46 @@
+version: 2
+
+models:
+  - name: supplier_price_checks
+    description: >
+      One row per supplier file row with reject_reason (NULL = usable). The only place the quarantine rule
+      (rule 3) is written: unknown_sku first, then invalid_cost.
+    columns:
+      - name: reject_reason
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["unknown_sku", "invalid_cost"]
+
+  - name: product_cost_history
+    description: >
+      SCD2 history of supplier costs. Grain: one row per SKU per cost version. valid_from is inclusive,
+      valid_to exclusive and NULL for the current version. A version starts only when the cost changes.
+    data_tests:
+      - unique:
+          arguments:
+            column_name: "sku || '|' || valid_from"
+    columns:
+      - name: sku
+        data_tests:
+          - not_null
+      - name: valid_from
+        data_tests:
+          - not_null
+      - name: unit_cost_sar
+        data_tests:
+          - not_null
+
+  - name: order_lines_costed
+    description: >
+      Grain: one row per counted order line (delivered, quantity > 0, order date on or after the first
+      supplier week), with the cost version valid on its order date. Uncosted lines have a NULL cost.
+    data_tests:
+      - unique:
+          # the point-in-time join must never match two versions: that would count a line twice
+          arguments:
+            column_name: "order_id || '-' || line_no"
+    columns:
+      - name: revenue_sar
+        data_tests:
+          - not_null

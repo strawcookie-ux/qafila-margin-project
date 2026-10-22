@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: price_quarantine
+    description: >
+      One row per rejected supplier row: unknown_sku (not sold by Qafila) or invalid_cost (zero, negative or
+      not a number). raw_cost is the value exactly as it appeared in the file. Grain: one row per supplier file row.
+    columns:
+      - name: source_file
+        data_tests:
+          - not_null
+      - name: reason
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["unknown_sku", "invalid_cost"]
