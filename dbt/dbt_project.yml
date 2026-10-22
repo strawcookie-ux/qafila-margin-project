@@ -6,6 +6,10 @@ model-paths: ["models"]
 macro-paths: ["macros"]
 test-paths: ["tests"]
 
+vars:
+  # The first supplier week. The only date the brief allows us to fix: everything else comes from the data.
+  margin_start_date: "2026-08-31"
+
 models:
   qafila_margin:
     staging:

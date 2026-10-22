@@ -1,0 +1,51 @@
+version: 2
+
+# Staging: one model per source, cleaning only (types, trimming, Riyadh dates, parsed costs). Views.
+# Tests here watch the INPUTS, so they warn instead of failing: a surprise in an unseen dataset should
+# be reported, not stop the run. The tests on the outputs (silver, gold, quality) are the strict ones.
+models:
+  - name: stg_orders
+    description: One row per order, with its Riyadh order date.
+    columns:
+      - name: order_id
+        data_tests:
+          - unique
+          - not_null
+      - name: order_date
+        description: created_at (UTC) + 3 hours, as a date. The date every rule uses.
+        data_tests:
+          - not_null:
+              config:
+                severity: warn
+
+  - name: stg_order_items
+    description: One row per order line, with revenue_sar = round(quantity * unit_price - discount, 2).
+    data_tests:
+      - unique:
+          arguments:
+            column_name: "order_id || '-' || line_no"
+
+  - name: stg_products
+    description: One row per product, SKU trimmed.
+    columns:
+      - name: sku
+        description: Trimmed. Must stay unique after trimming, or a line would match two costs.
+        data_tests:
+          - unique:
+              config:
+                severity: warn
+          - not_null:
+              config:
+                severity: warn
+
+  - name: stg_stores
+    description: One row per dark store.
+
+  - name: stg_supplier_prices
+    description: One row per supplier file row, cost parsed (decimal commas, Arabic-Indic digits), nothing filtered.
+    columns:
+      - name: valid_from
+        data_tests:
+          - not_null:
+              config:
+                severity: warn

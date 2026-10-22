@@ -1,13 +1,23 @@
 version: 2
 
-# Step 1 (run.py: ingest) lands these tables. Rename them here if yours are called something else.
+# Step 1 (run.py: ingest) lands these tables, exactly as they arrive (full refresh every run).
 sources:
   - name: raw
     schema: raw
     tables:
       - name: orders
+        description: App database orders. created_at / updated_at are UTC timestamps stored as text.
       - name: order_items
+        description: App database order lines. A handful have a quantity of zero or less.
       - name: products
+        description: App database products. Two SKUs have trailing spaces.
       - name: stores
+        description: App database dark stores (12), each in one city.
       - name: supplier_prices
-        description: Every row of every suppliers/prices_*.csv file, with the file it came from.
+        description: >
+          Every row of every suppliers/prices_*.csv file, all columns as text, with the file it came from
+          (source_file). The cost is in unit_cost (up to W38) or cost_sar (W39 on).
+        columns:
+          - name: source_file
+            data_tests:
+              - not_null
